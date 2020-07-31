@@ -1,0 +1,17 @@
+{
+  "name": "minna_discord_bot",
+  "version": "1.0.0",
+  "description": "provide by yukikwi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "yukikwi",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.2",
+    "discord.js": "^12.2.0",
+    "ffmpeg-static": "^4.2.6",
+    "ytdl-core": "^3.2.0"
+  }
+}
