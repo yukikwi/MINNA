@@ -88,5 +88,5 @@ client.on('message', async msg => {
 });
 
 //login
-client.login('Mzk1OTIyNTA4NjAxMzYwMzg0.WkTpkQ.weKw8jDimX8iViV35_vHcj0bUmI');
+client.login('token');
 client.on('debug', console.log)
