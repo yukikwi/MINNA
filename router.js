@@ -16,7 +16,7 @@
             return 'respond_text';
         }
 
-        if(msg_cmd == prefix+'play' || msg_cmd == prefix+'pause' || msg_cmd == prefix+'exit' || msg_cmd == prefix+'resume' || msg_cmd == prefix+'stop'){
+        if(msg_cmd == prefix+'play' || msg_cmd == prefix+'pause' || msg_cmd == prefix+'exit' || msg_cmd == prefix+'stop' || msg_cmd == prefix+'resume'){
             return 'respond_voice';
         }
     }

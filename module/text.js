@@ -1,14 +1,15 @@
 (function() {
 
-    var text = function(msg){
+    var text = function(client, msg){
         if (msg.content === 'ping') {
-            return 'pong';
+            var ping_value = Math.round(client.ws.ping) + ' ms'
+            return ping_value;
         }
     }
 
-    module.exports.text = function(msg) {
+    module.exports.text = function(client, msg) {
         msg.content = msg.content.substring(1);
-        return text(msg);
+        return text(client, msg);
     }
 
 }());
