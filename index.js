@@ -7,7 +7,7 @@ var module_voice = require("./module/voice");
 var router = require("./router");
 var validUrl = require('valid-url');
 const YouTube = require("discord-youtube-api");
-const youtube = new YouTube("AIzaSyDM0ZP3lC3cAlGD2DzW5zSgUXaQYqjioBU");
+const youtube = new YouTube("yt-token");
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
