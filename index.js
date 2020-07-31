@@ -4,7 +4,7 @@ const ytdl = require('ytdl-core');
 var module_text = require("./module/text");
 var module_voice = require("./module/voice");
 var router = require("./router");
-var voice_connection;
+var voice_connection = false;
 var dispatcher;
 var is_play = false;
 var is_end = true;
@@ -25,9 +25,11 @@ client.on('message', async msg => {
                 }
                 else if(cmd_type == 'respond_voice'){
                     console.log('voice cmd detect \n');
+                    var parser = module_voice.exc(msg);
                     if (msg.member.voice.channel) {
-                        voice_connection = await msg.member.voice.channel.join();
-                        var parser = module_voice.exc(msg);
+                        if(parser[0] != 'exit'){
+				voice_connection = await msg.member.voice.channel.join();
+			}
                         if(parser[0] == 'play'){
 			    is_play = true;
 			    is_end = false;
@@ -67,12 +69,13 @@ client.on('message', async msg => {
 				}
 			}
 			else if(parser[0] == 'exit'){
-				if(voice_connection){
+				if(voice_connection != false && ('status' in voice_connection && voice_connection.status != 4)){
 					voice_connection.disconnect()
+					voice_connection = false;
 					msg.channel.send('Bye');
 				}
 				else{
-					msg.channel.send("I'm not connect with voice channel");
+					msg.channel.send("I'm not connect to voice channel or service restart");
 				}
 			}
                     } else {
