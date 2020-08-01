@@ -1,48 +1,79 @@
 (function() {
 
+    var queue = [];
+    var player_status = false;
+
     var exc = function(msg){
         var split_msg = msg.content.split(/ (.+)/);
         return [split_msg[0] , split_msg[1]];
     }
 
-    var music_exc = async function(msg, parser, voice_connection, dispatcher, is_play, is_end, validUrl, youtube, utf8, ytdl){
-        if(parser[0] != 'exit'){
+    var player = async function(queue, voice, ytdl){
+        var url = queue[0];
+        console.log('playing: '+url);
+        dispatcher = voice.play(ytdl(url, 'highestaudio'));
+
+        dispatcher.on('finish', () => {
+            console.log('End playing!');
+            dispatcher = null // end the stream
+            queue.shift();
+            if(queue.length != 0){
+                player(queue, voice, ytdl)
+            }
+        });		
+        
+        return dispatcher;
+    }
+
+    var music_exc = async function(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl){
+        
+        if(parser[0] != 'exit' && is_connect == false){
+            console.log('**********************************')
+            console.log('voice connection...')
+            console.log('**********************************')
             voice_connection = await msg.member.voice.channel.join();
+            is_connect = true;
         }
+        
         if(parser[0] == 'play'){
-            is_play = true;
-            is_end = false;
             parser[1] = utf8.encode(parser[1])
             if(validUrl.isUri(parser[1])){
-                dispatcher = voice_connection.play(ytdl(parser[1], 'highestaudio'));
+                queue.push(parser[1])
             }
             else{
                 var search = await youtube.searchVideos(parser[1]);
-                console.log("*********************")
-                console.log("Search result")
-                console.log(search.id)
-                console.log(parser[1])
-                console.log("*********************")
-                dispatcher = voice_connection.play(ytdl("https://www.youtube.com/watch?v="+search.id, 'highestaudio'));
+                queue.push("https://www.youtube.com/watch?v="+search.id)
             }
 
-            dispatcher.on('finish', () => {
-                console.log('Finished playing!');
-                is_play = false;
-                is_end = true;
-                dispatcher.destroy(); // end the stream
-            });		
+            console.log('**********************************')
+            console.log(queue)
+            console.log(queue.length);
+            console.log('**********************************')
+            
+            if(player_status == false){
+                player_status = true;
+                dispatcher = await player(queue, voice_connection, ytdl)
+            }
 
         }
         else if(parser[0] == 'pause'){
-            if(is_play == true){
-                is_play = false;
+            if(dispatcher != null && dispatcher.paused == false){
                 dispatcher.pause();
                 msg.channel.send('Pause');
             }
         }
+        else if(parser[0] == 'skip'){
+            if(dispatcher != null && dispatcher.paused == false){
+                console.log('Skip playing!');
+                dispatcher = null // end the stream
+                queue.shift();
+                if(queue.length != 0){
+                    player(queue, voice_connection, ytdl)
+                }
+            }
+        }
         else if(parser[0] == 'resume'){
-            if(is_play == false && is_end == false){
+            if(dispatcher != null && dispatcher.paused == true){
                 is_play = true;
                 dispatcher.resume();
                 msg.channel.send('Resume');
@@ -52,10 +83,34 @@
             }
         }
         else if(parser[0] == 'stop'){
-            if(is_play == true){
-                dispatcher.destroy();
+            if(dispatcher != null){
+                dispatcher.pause();
+                dispatcher = null;
+                player_status = false;
+                queue = [];
                 msg.channel.send('Stop');
             }
+            console.log(queue)
+        }
+        else if(parser[0] == 'queue'){
+            if(player_status == true){
+                queue_text = '';
+                var i = 1;
+                if(queue.length != 0){
+                    queue.forEach(item => {
+                        queue_text += i+'. '+item+'\n'
+                        i++
+                    });
+                }    
+                else{
+                    queue_text = 'No song in queue';
+                }
+            }
+            else{
+                queue_text = "No song play";
+            }
+            console.log(queue)
+            msg.channel.send(queue_text);
         }
         else if(parser[0] == 'exit'){
             if(voice_connection != false && ('status' in voice_connection && voice_connection.status != 4)){
@@ -67,6 +122,8 @@
                 msg.channel.send("I'm not connect to voice channel or service restart");
             }
         }
+
+        return [is_play, is_end, voice_connection, is_connect, dispatcher];
     }
 
     module.exports.exc = function(msg) {
@@ -74,10 +131,10 @@
         return exc(msg);
     }
 
-    module.exports.music_exc = function(msg, voice_connection, dispatcher, is_play, is_end, validUrl, youtube, utf8, ytdl) {
+    module.exports.music_exc = function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue) {
         msg.content = msg.content.substring(1);
         var parser = exc(msg);
-        music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, validUrl, youtube, utf8, ytdl);
+        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue);
     }
 
 }());
