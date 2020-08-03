@@ -1,14 +1,11 @@
 (function() {
 
-    var queue = [];
-    var player_status = false;
-
     var exc = function(msg){
         var split_msg = msg.content.split(/ (.+)/);
         return [split_msg[0] , split_msg[1]];
     }
 
-    var player = async function(queue, voice, ytdl){
+    var player = async function(queue, voice, ytdl, player_status){
         var url = queue[0];
         console.log('playing: '+url);
         dispatcher = voice.play(ytdl(url, 'highestaudio'));
@@ -20,12 +17,16 @@
             if(queue.length != 0){
                 player(queue, voice, ytdl)
             }
+            else{
+                voice.disconnect()
+                player_status = false;
+            }
         });		
         
-        return dispatcher;
+        return [dispatcher, player_status];
     }
 
-    var music_exc = async function(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl){
+    var music_exc = async function(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue, player_status){
         
         if(parser[0] != 'exit' && is_connect == false){
             console.log('**********************************')
@@ -51,8 +52,9 @@
             console.log('**********************************')
             
             if(player_status == false){
-                player_status = true;
-                dispatcher = await player(queue, voice_connection, ytdl)
+                temp_player = await player(queue, voice_connection, ytdl, player_status)
+                dispatcher = temp_player[0]
+                player_status = temp_player[1]
             }
 
         }
@@ -123,7 +125,7 @@
             }
         }
 
-        return [is_play, is_end, voice_connection, is_connect, dispatcher];
+        return [is_play, is_end, voice_connection, is_connect, dispatcher, queue, player_status];
     }
 
     module.exports.exc = function(msg) {
@@ -131,10 +133,10 @@
         return exc(msg);
     }
 
-    module.exports.music_exc = function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue) {
+    module.exports.music_exc = function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue, player_status) {
         msg.content = msg.content.substring(1);
         var parser = exc(msg);
-        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue);
+        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue, player_status);
     }
 
 }());

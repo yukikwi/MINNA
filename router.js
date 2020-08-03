@@ -12,7 +12,7 @@
 
     var command_type = function(msg){
         var msg_cmd = msg.content.split(" ")[0]
-        if(msg_cmd == prefix+'ping'){
+        if(msg_cmd == prefix+'ping' || msg_cmd == prefix+'inviteinfo' || msg_cmd == prefix+'invite'){
             return 'respond_text';
         }
 
