@@ -23,7 +23,7 @@
             }
         });		
         
-        return [dispatcher, player_status];
+        return [dispatcher, player_status, queue];
     }
 
     var music_exc = async function(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue, player_status){
@@ -54,7 +54,7 @@
             if(player_status == false){
                 temp_player = await player(queue, voice_connection, ytdl, player_status)
                 dispatcher = temp_player[0]
-                player_status = temp_player[1]
+                player_status = true
             }
 
         }
@@ -95,7 +95,7 @@
             console.log(queue)
         }
         else if(parser[0] == 'queue'){
-            if(player_status == true){
+            if(queue.length!=0){
                 queue_text = '';
                 var i = 1;
                 if(queue.length != 0){
