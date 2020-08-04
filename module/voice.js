@@ -68,9 +68,9 @@
         connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
                                 
         });
-        //dispatcher = voice.play(await ytdl(url, 'highestaudio'), { type: 'opus', highWaterMark: 50, volume: false });
+        //dispatcher = voice.play(await ytdl(url, 'highestaudio'), { type: 'opus', volume: false });
         //YTDL-core-discord style
-        dispatcher = voice.play(await ytdl(url), { type: 'opus', highWaterMark: 50, volume: false })
+        dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
 
         dispatcher.on('finish', async function(){
             console.log('End playing!');
