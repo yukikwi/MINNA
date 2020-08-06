@@ -16,7 +16,7 @@
             return 'respond_text';
         }
 
-        if(msg_cmd == prefix+'kick'){
+        if(msg_cmd == prefix+'kick' || msg_cmd == prefix+'ban'){
             return 'respond_management';
         }
 

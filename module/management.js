@@ -7,7 +7,7 @@
         if (command == 'kick') {
             if(msg.guild.member(msg.author).hasPermission('KICK_MEMBERS')){
                 if(mention_user){
-                    var member = msg.guild.member(mention_user)
+                    const member = msg.guild.member(mention_user)
                     if(member){
                         member.kick().then(()=>{
                             msg.reply("RIP <@"+member.id+">");
@@ -27,6 +27,28 @@
             }
             else {
                 msg.reply("Only admin can kick");
+            }
+        }
+        else if(command == 'ban'){
+            if(msg.guild.member(msg.author).hasPermission('BAN_MEMBERS')){
+                const user = message.mentions.users.first();
+                if (user) {
+                    const member = message.guild.member(user);
+                    if (member) {
+                        member.ban().then(() => {
+                            msg.reply("RIP 4 ever <@"+member.id+">");
+                        })
+                        .catch(err => {
+                            message.reply('I was unable to ban the member');
+                            console.error(err);
+                        });
+                    } 
+                    else {
+                        message.reply("That user isn't in this guild!");
+                    }
+                } else {
+                message.reply("You didn't mention the user to ban!");
+                }
             }
         }
     }
