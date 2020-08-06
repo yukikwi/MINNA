@@ -31,23 +31,23 @@
         }
         else if(command == 'ban'){
             if(msg.guild.member(msg.author).hasPermission('BAN_MEMBERS')){
-                const user = message.mentions.users.first();
+                const user = msg.mentions.users.first();
                 if (user) {
-                    const member = message.guild.member(user);
+                    const member = msg.guild.member(user);
                     if (member) {
                         member.ban().then(() => {
                             msg.reply("RIP 4 ever <@"+member.id+">");
                         })
                         .catch(err => {
-                            message.reply('I was unable to ban the member');
+                            msg.reply('I was unable to ban the member');
                             console.error(err);
                         });
                     } 
                     else {
-                        message.reply("That user isn't in this guild!");
+                        msg.reply("That user isn't in this guild!");
                     }
                 } else {
-                message.reply("You didn't mention the user to ban!");
+                    msg.reply("You didn't mention the user to ban!");
                 }
             }
         }
