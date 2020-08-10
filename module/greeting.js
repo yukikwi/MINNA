@@ -13,14 +13,24 @@
     }
 
     async function hook_greeting(connection, member){
+        console.log("Hook: search "+member.guild.id)
         var greeting_data = await greeting_fetch(connection, member.guild.id)
         if(greeting_data.length != 0){
-            const channel = member.guild.channels.cache.find(ch => ch.name === greeting_data[0].greeting_room);
+            console.log("Hook: Found Greeting setting")
+            const channel = member.guild.channels.cache.find(ch => ch.name == greeting_data[0].greeting_room);
             // Do nothing if the channel wasn't found on this server
-            if (!channel) return;
-            // Send the message, mentioning the member
-            var text = greeting_data[0].greeting_pattern.replace('@mention', '<@'+member.id+'>')
-            channel.send(text);
+            if (!channel) {
+                console.log("Hook: No Channel found")
+            }
+            else{
+                console.log("Hook: Channel detect")// Send the message, mentioning the member
+                var text = greeting_data[0].greeting_pattern.replace('@mention', '<@'+member.id+'>')
+                channel.send(text);
+            }
+            
+        }
+        else{
+            console.log("Hook: No Greeting setting")
         }
         
     }
