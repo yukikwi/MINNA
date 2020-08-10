@@ -7,6 +7,7 @@ var module_text = require("./module/text");
 var module_voice = require("./module/voice");
 var module_log = require("./module/log");
 var module_manage = require("./module/management");
+var module_greeting = require("./module/greeting");
 var router = require("./router");
 var validUrl = require('valid-url');
 var voice_connection = {};
@@ -46,6 +47,11 @@ client.on('ready', () => {
   })
 });
 
+client.on('guildMemberAdd', async member => {
+    module_log.log('HOOK: guildMemberAdd');
+    module_greeting.hook_greeting(connection, member)
+});
+
 client.on('message', async msg => {
     if(!msg.author.bot){
         // เช็ค prefix
@@ -63,6 +69,10 @@ client.on('message', async msg => {
                 else if(cmd_type == 'respond_management'){
                     module_log.log('CMD: Manage');
                     module_manage.manage(client, msg);
+                }
+                else if(cmd_type == 'respond_greeting'){
+                    module_log.log('CMD: Greeting');
+                    module_greeting.greeting(connection, msg);
                 }
                 else if(cmd_type == 'respond_voice'){
 					//หมวดหมู่เสียง

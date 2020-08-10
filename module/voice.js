@@ -49,14 +49,6 @@
         });
     }
 
-    function getTitleVideo(videoUrl, ytdl){
-        return new Promise ((resolve, reject) => {
-            ytdl.getBasicInfo(videoUrl, (err, info) => {
-                    resolve (info.title)
-            })
-        })
-    } 
-
     var player = async function(msg, voice, ytdl, connection, player_status){
         var data = await url_get(msg, voice, ytdl, connection)
         var url = data.queue_url
@@ -68,12 +60,14 @@
         connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
                                 
         });
-        //dispatcher = voice.play(await ytdl(url, 'highestaudio'), { type: 'opus', volume: false });
-        //YTDL-core-discord style
-        var song_title = await getTitleVideo(url, ytdl);
-        msg.channel.send(":play_pause: Song title : "+song_title)
 
-        dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
+        var youtube_media = await ytdl(url, { quality : 'highestaudio' })
+        youtube_media.on('info', (data)=>{
+            msg.channel.send(":musical_note: Song title : "+data.videoDetails.title)
+        })
+        dispatcher = voice.play(youtube_media);
+        //YTDL-core-discord style
+        //dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
         
         dispatcher.on('finish', async function(){
             console.log('End playing!');
@@ -115,7 +109,12 @@
             if(validUrl.isUri(parser[1])){
                 new Promise(function(resolve, reject) {
                     connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, "'+parser[1]+'", "'+msg.member.voice.channel.id+'"); ', function (error, results, fields) {
-                        console.log("Insert: "+parser[1])  
+                        if(error){
+                            console.log("Insert fail: "+error)
+                        }
+                        else{
+                            console.log("Insert: "+parser[1])  
+                        }
                     })
                 })
             }
