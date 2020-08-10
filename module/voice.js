@@ -7,14 +7,6 @@
         return [split_msg[0] , split_msg[1]];
     }
 
-    
-    function real_player(msg, connection, callback){
-        connection.query('SELECT queue_id, queue_url FROM music_queue WHERE queue_server = "'+msg.member.voice.channel.id+'" ORDER BY queue_id LIMIT 1', function(error, result, fields){
-            console.log(result[0].queue_url)
-            return callback(result[0].queue_url)
-        })
-    }
-
     function url_get(msg, voice, ytdl, connection){
         return new Promise(function(resolve, reject) {
             connection.query('SELECT queue_id, queue_url FROM music_queue WHERE queue_server = "'+msg.member.voice.channel.id+'" ORDER BY queue_id LIMIT 1', function(error, result, fields){
@@ -57,6 +49,14 @@
         });
     }
 
+    function getTitleVideo(videoUrl, ytdl){
+        return new Promise ((resolve, reject) => {
+            ytdl.getBasicInfo(videoUrl, (err, info) => {
+                    resolve (info.title)
+            })
+        })
+    } 
+
     var player = async function(msg, voice, ytdl, connection, player_status){
         var data = await url_get(msg, voice, ytdl, connection)
         var url = data.queue_url
@@ -70,8 +70,11 @@
         });
         //dispatcher = voice.play(await ytdl(url, 'highestaudio'), { type: 'opus', volume: false });
         //YTDL-core-discord style
-        dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
+        var song_title = await getTitleVideo(url, ytdl);
+        msg.channel.send(":play_pause: Song title : "+song_title)
 
+        dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
+        
         dispatcher.on('finish', async function(){
             console.log('End playing!');
             dispatcher = null // end the stream
@@ -141,7 +144,7 @@
                     console.log("Update: "+player_status)                 
                 });
                 dispatcher.pause();
-                msg.reply('Pause');
+                msg.reply(':pause_button: Pause');
             }
         }
         else if(parser[0] == 'skip'){
@@ -159,7 +162,7 @@
             if(dispatcher != null && dispatcher.paused == true){
                 player_status = "resume"
                 dispatcher.resume();
-                msg.channel.send('Resume');
+                msg.channel.send(':play_pause: Resume');
             }
             else{
                 msg.channel.send("No pause");
@@ -176,13 +179,13 @@
                     console.log("update: stop")                 
                 });
                 remove_all(msg, connection)
-                msg.channel.send('Stop');
+                msg.channel.send(':stop_button: Stop');
             }
         }
         else if(parser[0] == 'queue'){
             queue = await db_queue(msg, connection)
             if(queue.length!=0){
-                queue_text = '';
+                queue_text = ':coffee: Queue';
                 var i = 1;
                 if(queue.length != 0){
                     queue.forEach(item => {
