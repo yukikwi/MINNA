@@ -169,6 +169,12 @@
         var command = msg.content.split(" ")[0];
         if(command == 'add_greeting'){
             var temp = msg.content.match(/[^" ]+|"[^"]+"/g)
+            if(temp[1].charAt(0) == '"'){
+                var pattern = temp[1].slice(1,-1)
+            }
+            else{
+                var pattern = temp[1]
+            }
             var pattern = temp[1].slice(1,-1)
             var room = msg.channel.name
             return add_greeting(connection, msg, pattern, room)
@@ -179,7 +185,12 @@
         }
         if(command == 'add_img_greeting'){
             var temp = msg.content.match(/[^" ]+|"[^"]+"/g)
-            var greeting_img_head = temp[1]
+            if(temp[1].charAt(0) == '"'){
+                var greeting_img_head = temp[1].slice(1,-1)
+            }
+            else{
+                var greeting_img_head = temp[1]
+            }
             var room = msg.channel.name
             return add_img_greeting(connection, msg, greeting_img_head, room)
         }
