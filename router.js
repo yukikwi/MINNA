@@ -23,6 +23,10 @@
         if(msg_cmd == prefix+'play' || msg_cmd == prefix+'queue'  || msg_cmd == prefix+'skip' || msg_cmd == prefix+'pause' || msg_cmd == prefix+'exit' || msg_cmd == prefix+'stop' || msg_cmd == prefix+'resume'){
             return 'respond_voice';
         }
+
+        if(msg_cmd == prefix+'add_greeting' || msg_cmd == prefix+'remove_greeting' || msg_cmd == prefix+'add_img_greeting'){
+            return 'respond_greeting'
+        }
     }
 
     module.exports.is_cmd = function(msg) {

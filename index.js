@@ -1,7 +1,8 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-//const ytdl = require('ytdl-core');
-const ytdl = require('ytdl-core-discord')
+const { Client, MessageAttachment } = require('discord.js');
+const client = new Client();
+const canvas = require('canvas')
+const ytdl = require('ytdl-core');
+//const ytdl = require('ytdl-core-discord')
 const utf8 = require('utf8');
 var module_text = require("./module/text");
 var module_voice = require("./module/voice");
@@ -49,7 +50,7 @@ client.on('ready', () => {
 
 client.on('guildMemberAdd', async member => {
     module_log.log('HOOK: guildMemberAdd');
-    module_greeting.hook_greeting(connection, member)
+    module_greeting.hook_greeting(connection, member, MessageAttachment, canvas)
 });
 
 client.on('message', async msg => {
@@ -72,7 +73,7 @@ client.on('message', async msg => {
                 }
                 else if(cmd_type == 'respond_greeting'){
                     module_log.log('CMD: Greeting');
-                    module_greeting.greeting(connection, msg);
+                    module_greeting.greeting(connection, msg, MessageAttachment, canvas);
                 }
                 else if(cmd_type == 'respond_voice'){
 					//หมวดหมู่เสียง

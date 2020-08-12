@@ -184,7 +184,7 @@
         else if(parser[0] == 'queue'){
             queue = await db_queue(msg, connection)
             if(queue.length!=0){
-                queue_text = ':coffee: Queue';
+                queue_text = ':coffee: Queue\n';
                 var i = 1;
                 if(queue.length != 0){
                     queue.forEach(item => {
