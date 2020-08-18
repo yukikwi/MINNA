@@ -10,7 +10,6 @@ var module_log = require("./module/log");
 var module_manage = require("./module/management");
 var module_greeting = require("./module/greeting");
 var router = require("./router");
-var validUrl = require('valid-url');
 var voice_connection = {};
 var dispatcher = {};
 var player_status
@@ -100,10 +99,10 @@ client.on('message', async msg => {
                                 module_log.log("DB: "+player_status)
                             }
                                 
-                            var temp_res = await module_voice.music_exc(msg, voice_connection[msg.member.voice.channel.id], dispatcher[msg.member.voice.channel.id], validUrl, youtube, utf8, ytdl, player_status, connection)
+                            var temp_res = await module_voice.music_exc(msg, voice_connection[msg.member.voice.channel.id], dispatcher[msg.member.voice.channel.id], youtube, utf8, ytdl, player_status, connection)
                             voice_connection[msg.member.voice.channel.id] = temp_res[0];
                             dispatcher[msg.member.voice.channel.id] = temp_res[1]
-
+                            
                             module_log.log("Music_EXEC: "+temp_res[2]);
                             player_status = temp_res[2];
                             var temp_sql_array = [temp_res[2]]

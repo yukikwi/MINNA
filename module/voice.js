@@ -1,3 +1,6 @@
+var validUrl = require('valid-url');
+const ytlist = require('youtube-playlist');
+
 (function() {
 
     var temp_dispatcher 
@@ -14,6 +17,31 @@
                     return reject(error);
                 }
                 resolve(result[0])
+            })
+        });
+    }
+
+    function playlist_queue(connection, url, msg){
+        return new Promise(function(resolve, reject) {
+            ytlist(url, 'url').then(res => {
+                if(res.data.playlist.length != 0){
+                    var j = 0
+                    for(var i = 0; i < res.data.playlist.length; i++){
+                        connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, "'+res.data.playlist[i]+'", "'+msg.member.voice.channel.id+'"); ', function (error, results, fields) {
+                            if(error){
+                                console.log("Insert fail: "+error)
+                                return false
+                            }
+                            else{
+                                console.log("Insert: "+res.data.playlist[j])  
+                                return true
+                                j++;
+                            }
+                            
+                        })
+                    }
+                    resolve(true)
+                }
             })
         });
     }
@@ -75,7 +103,7 @@
             await remove_first(msg, connection);
             queue = await db_queue(msg, connection);
             if(queue.length != 0){
-                player(msg, voice, ytdl, connection)
+                player(msg, voice, ytdl, connection, player_status)
             }
             else{
                 voice.disconnect()
@@ -92,13 +120,13 @@
         return [dispatcher, player_status];
     }
 
-    var music_exc = async function(msg, parser, voice_connection, dispatcher, validUrl, youtube, utf8, ytdl, player_status, connection){
+    var music_exc = async function(msg, parser, voice_connection, dispatcher, youtube, utf8, ytdl, player_status, connection){
         console.log("CMD: "+parser[0])
         if(parser[0] != 'exit' && player_status == "stop"){
             console.log('voice connection...')
             voice_connection = await msg.member.voice.channel.join();
-            player_status = "connect";
-            connection.query('UPDATE server set server_voice_data = "connect" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+            player_status = "stop";
+            connection.query('UPDATE server set server_voice_data = "stop" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
                 console.log("Update: "+player_status)                 
             });
         }
@@ -127,13 +155,28 @@
                 })
             }
             
-            if(player_status == "connect"){
+            if(player_status == "stop"){
                 var temp_player = await player(msg, voice_connection, ytdl, connection, player_status)
                 
                 dispatcher = temp_player[0]
                 player_status = temp_player[1]
             }
 
+        }
+        else if(parser[0] == 'plist'){
+            parser[1] = utf8.encode(parser[1])
+            if(/^.*(youtu.be\/|list=)([^#\&\?]*).*/.test(parser[1])){
+                var url = 'https://www.youtube.com/playlist?list='+parser[1].match(/list=([^&#]{5,})/)[1]
+                await playlist_queue(connection, url, msg)
+                if(player_status == "stop"){
+                    console.log("Song start")
+                    var temp_player = await player(msg, voice_connection, ytdl, connection, player_status)
+                    
+                    dispatcher = temp_player[0]
+                    player_status = temp_player[1]
+                }
+            }
+            
         }
         else if(parser[0] == 'pause'){
             console.log(dispatcher.paused)
@@ -149,11 +192,15 @@
         else if(parser[0] == 'skip'){
             if(dispatcher != null && dispatcher.paused == false){
                 console.log('Skip playing!');
+                dispatcher.pause()
                 dispatcher = null // end the stream
                 await remove_first(msg, connection);
                 queue = await db_queue(msg, connection);
                 if(queue.length != 0){
-                    player(queue, voice_connection, ytdl)
+                    var temp_player = await player(msg, voice_connection, ytdl, connection, player_status)
+                    
+                    dispatcher = temp_player[0]
+                    player_status = temp_player[1]
                 }
             }
         }
@@ -221,10 +268,10 @@
         return exc(msg);
     }
 
-    module.exports.music_exc = async function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue, player_status, connection) {
+    module.exports.music_exc = async function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, youtube, utf8, ytdl, queue, player_status, connection) {
         msg.content = msg.content.substring(1);
         var parser = exc(msg);
-        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, validUrl, youtube, utf8, ytdl, queue, player_status, connection);
+        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, youtube, utf8, ytdl, queue, player_status, connection);
     }
 
 }());

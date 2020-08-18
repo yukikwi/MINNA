@@ -20,7 +20,7 @@
             return 'respond_management';
         }
 
-        if(msg_cmd == prefix+'play' || msg_cmd == prefix+'queue'  || msg_cmd == prefix+'skip' || msg_cmd == prefix+'pause' || msg_cmd == prefix+'exit' || msg_cmd == prefix+'stop' || msg_cmd == prefix+'resume'){
+        if(msg_cmd == prefix+'play' || msg_cmd == prefix+'queue'  || msg_cmd == prefix+'skip' || msg_cmd == prefix+'pause' || msg_cmd == prefix+'exit' || msg_cmd == prefix+'stop' || msg_cmd == prefix+'resume' || msg_cmd == prefix+'plist'){
             return 'respond_voice';
         }
 

@@ -17,6 +17,7 @@
     "mysql": "^2.18.1",
     "utf8": "^3.0.0",
     "valid-url": "^1.0.9",
+    "youtube-playlist": "^1.0.4",
     "ytdl-core": "^3.2.1"
   }
 }
