@@ -88,8 +88,15 @@ const ytlist = require('youtube-playlist');
         connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
                                 
         });
-
-        var youtube_media = await ytdl(url, { quality : 'highestaudio' })
+        var voice_bitrate = voice.channel.bitrate / 1000
+        if(voice_bitrate <= 96){
+            var quality = 18
+        }
+        else{
+            var quality = 140
+        }
+        console.log('Voice: quality itag = '+quality)
+        var youtube_media = await ytdl(url, { quality : quality,filter: format => 'audioonly' })
         youtube_media.on('info', (data)=>{
             msg.channel.send(":musical_note: Song title : "+data.videoDetails.title)
         })
