@@ -77,7 +77,7 @@ const ytlist = require('youtube-playlist');
         });
     }
 
-    var player = async function(msg, voice, ytdl, connection, player_status){
+    var player = async function(msg, voice, ytdl, connection, player_status, client){
         var data = await url_get(msg, voice, ytdl, connection)
         var url = data.queue_url
         var id = data.queue_id
@@ -95,12 +95,18 @@ const ytlist = require('youtube-playlist');
         else{
             var quality = 140
         }
-        console.log('Voice: quality itag = '+quality)
-        var youtube_media = await ytdl(url, { quality : quality,filter: format => 'audioonly' })
+
+        var water_mark = Math.round((client.ws.ping/20) + 3)
+        if(water_mark < 12){
+            water_mark = 12
+        }
+        
+        console.log('Voice: quality bitrate = '+ voice_bitrate +'kbps, watermark = '+ water_mark +' -> itag = '+ quality)
+        var youtube_media = await ytdl(url, { quality : quality, filter: format => 'audioonly', highWaterMark: water_mark})
         youtube_media.on('info', (data)=>{
-            msg.channel.send(":musical_note: Song title : "+data.videoDetails.title)
+            msg.channel.send(":musical_note: Song title : "+data.videoDetails.title+" [Play in  "+ voice_bitrate +"kbps]")
         })
-        dispatcher = voice.play(youtube_media);
+        dispatcher = voice.play(youtube_media, {bitrate: voice_bitrate});
         //YTDL-core-discord style
         //dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
         
@@ -127,7 +133,7 @@ const ytlist = require('youtube-playlist');
         return [dispatcher, player_status];
     }
 
-    var music_exc = async function(msg, parser, voice_connection, dispatcher, youtube, utf8, ytdl, player_status, connection){
+    var music_exc = async function(msg, parser, voice_connection, dispatcher, youtube, utf8, ytdl, player_status, connection, client){
         console.log("CMD: "+parser[0])
         if(parser[0] != 'exit' && player_status == "stop"){
             console.log('voice connection...')
@@ -163,7 +169,7 @@ const ytlist = require('youtube-playlist');
             }
             
             if(player_status == "stop"){
-                var temp_player = await player(msg, voice_connection, ytdl, connection, player_status)
+                var temp_player = await player(msg, voice_connection, ytdl, connection, player_status, client)
                 
                 dispatcher = temp_player[0]
                 player_status = temp_player[1]
@@ -177,7 +183,7 @@ const ytlist = require('youtube-playlist');
                 await playlist_queue(connection, url, msg)
                 if(player_status == "stop"){
                     console.log("Song start")
-                    var temp_player = await player(msg, voice_connection, ytdl, connection, player_status)
+                    var temp_player = await player(msg, voice_connection, ytdl, connection, player_status, client)
                     
                     dispatcher = temp_player[0]
                     player_status = temp_player[1]
@@ -186,7 +192,6 @@ const ytlist = require('youtube-playlist');
             
         }
         else if(parser[0] == 'pause'){
-            console.log(dispatcher.paused)
             if(dispatcher != null && dispatcher.paused == false){
                 player_status = "pause"
                 connection.query('UPDATE server set server_voice_data = "pause" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
@@ -275,10 +280,10 @@ const ytlist = require('youtube-playlist');
         return exc(msg);
     }
 
-    module.exports.music_exc = async function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, youtube, utf8, ytdl, queue, player_status, connection) {
+    module.exports.music_exc = async function(msg, voice_connection, dispatcher, is_play, is_end, is_connect, youtube, utf8, ytdl, queue, player_status, connection, client) {
         msg.content = msg.content.substring(1);
         var parser = exc(msg);
-        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, youtube, utf8, ytdl, queue, player_status, connection);
+        return music_exc(msg, parser, voice_connection, dispatcher, is_play, is_end, is_connect, youtube, utf8, ytdl, queue, player_status, connection, client);
     }
 
 }());
