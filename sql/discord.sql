@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 12, 2020 at 09:58 AM
+-- Generation Time: Aug 24, 2020 at 06:51 AM
 -- Server version: 10.4.11-MariaDB
 -- PHP Version: 7.4.3
 
@@ -21,6 +21,31 @@ SET time_zone = "+00:00";
 --
 -- Database: `discord`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `filter_status`
+--
+
+CREATE TABLE `filter_status` (
+  `server_id` varchar(25) NOT NULL,
+  `status` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `filter_word`
+--
+
+CREATE TABLE `filter_word` (
+  `filter_id` int(11) NOT NULL,
+  `word` varchar(50) NOT NULL,
+  `server` varchar(25) NOT NULL,
+  `action` text NOT NULL,
+  `action_by` varchar(25) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -66,6 +91,18 @@ CREATE TABLE `server` (
 --
 
 --
+-- Indexes for table `filter_status`
+--
+ALTER TABLE `filter_status`
+  ADD PRIMARY KEY (`server_id`);
+
+--
+-- Indexes for table `filter_word`
+--
+ALTER TABLE `filter_word`
+  ADD PRIMARY KEY (`filter_id`);
+
+--
 -- Indexes for table `greeting`
 --
 ALTER TABLE `greeting`
@@ -86,6 +123,12 @@ ALTER TABLE `server`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `filter_word`
+--
+ALTER TABLE `filter_word`
+  MODIFY `filter_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `greeting`

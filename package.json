@@ -15,9 +15,11 @@
     "discord-ytdl-core": "^4.0.7",
     "discord.js": "^12.2.0",
     "ffmpeg-static": "^4.2.6",
+    "languagedetect": "^2.0.0",
     "mysql": "^2.18.1",
     "utf8": "^3.0.0",
     "valid-url": "^1.0.9",
+    "wordcut": "^0.9.0",
     "youtube-playlist": "^1.0.4",
     "ytdl-core": "^3.2.1"
   }
