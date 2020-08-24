@@ -90,23 +90,32 @@ const ytlist = require('youtube-playlist');
         });
         var voice_bitrate = voice.channel.bitrate / 1000
         if(voice_bitrate <= 96){
-            var quality = 18
+            var ytdl_quality = 18
         }
         else{
-            var quality = 140
+            var ytdl_quality = 140
         }
 
         var water_mark = Math.round((client.ws.ping/20) + 3)
         if(water_mark < 12){
             water_mark = 12
         }
+
+        console.log('Voice: quality bitrate = '+ voice_bitrate +'kbps, watermark = '+ water_mark +' -> itag = '+ ytdl_quality)
+
+        /*
+        var youtube_media = await ytdl(url, {
+            filter: "audioonly",
+            opusEncoded: true,
+            encoderArgs: ['-af', 'bass=g=10,dynaudnorm=f=200']
+        });
+        */
         
-        console.log('Voice: quality bitrate = '+ voice_bitrate +'kbps, watermark = '+ water_mark +' -> itag = '+ quality)
-        var youtube_media = await ytdl(url, { quality : quality, filter: format => 'audioonly', highWaterMark: water_mark})
+        var youtube_media = await ytdl(url, { quality : ytdl_quality, filter: format => 'audioonly'})
         youtube_media.on('info', (data)=>{
             msg.channel.send(":musical_note: Song title : "+data.videoDetails.title+" [Play in  "+ voice_bitrate +"kbps]")
         })
-        dispatcher = voice.play(youtube_media, {bitrate: voice_bitrate});
+        dispatcher = voice.play(youtube_media, {bitrate: voice_bitrate,  type: "opus"});
         //YTDL-core-discord style
         //dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
         
@@ -116,7 +125,8 @@ const ytlist = require('youtube-playlist');
             await remove_first(msg, connection);
             queue = await db_queue(msg, connection);
             if(queue.length != 0){
-                player(msg, voice, ytdl, connection, player_status)
+                console.log("Player: Play next song")
+                player(msg, voice, ytdl, connection, player_status, client)
             }
             else{
                 voice.disconnect()
