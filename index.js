@@ -2,9 +2,9 @@ const { Client, MessageAttachment } = require('discord.js');
 const client = new Client();
 const canvas = require('canvas')
 //Main
-//const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core');
 //If want
-const ytdl = require("discord-ytdl-core");
+//const ytdl = require("discord-ytdl-core");
 //const ytdl = require('ytdl-core-discord')
 const utf8 = require('utf8');
 var module_text = require("./module/text");
@@ -12,9 +12,11 @@ var module_voice = require("./module/voice");
 var module_log = require("./module/log");
 var module_manage = require("./module/management");
 var module_greeting = require("./module/greeting");
+var module_filter = require("./module/filter");
 var router = require("./router");
 var voice_connection = {};
 var dispatcher = {};
+var filter = {};
 var player_status
 const YouTube = require("discord-youtube-api");
 const youtube = new YouTube("token");
@@ -69,6 +71,17 @@ client.on('message', async msg => {
                         msg.channel.send(temp_text);
                     }
                 }
+                else if(cmd_type == 'respond_filter'){
+                    module_log.log('CMD: Filter');
+                    var temp_filter = await module_filter.filter_route(msg, connection);
+                    if(Array.isArray(temp_filter)){
+                        msg.channel.send(temp_filter[0]);
+                        filter[msg.member.guild.id] = temp_filter[1]
+                    }
+                    else if(temp_filter != false){
+                        msg.channel.send(temp_filter);
+                    }
+                }
                 else if(cmd_type == 'respond_management'){
                     module_log.log('CMD: Manage');
                     module_manage.manage(client, msg);
@@ -85,14 +98,14 @@ client.on('message', async msg => {
                             voice_connection[msg.member.voice.channel.id] = false
                             dispatcher[msg.member.voice.channel.id] = false
                         }
-                        connection.query('SELECT * FROM server WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', async function (error, results, fields) {
+                        connection.query('SELECT * FROM server WHERE server_voice_id = ? ', [msg.member.voice.channel.id], async function (error, results, fields) {
                             if (error) throw error;
                             if(results.length == 0){
                                 player_status = "stop";
                                 module_log.log("Local: "+player_status)
                                 var temp_sql_array = [player_status]
                                 var temp_sql_data = temp_sql_array.join()
-                                connection.query('INSERT INTO `server` (`server_id`, `server_voice_id`, `server_voice_data`) VALUES ("", "'+msg.member.voice.channel.id+'", "'+temp_sql_data+'");', function (error, results, fields) {
+                                connection.query('INSERT INTO `server` (`server_id`, `server_voice_id`, `server_voice_data`) VALUES ("", ?, ?);', [msg.member.voice.channel.id, temp_sql_data], function (error, results, fields) {
                                     
                                 });
                             }
@@ -110,7 +123,7 @@ client.on('message', async msg => {
                             player_status = temp_res[2];
                             var temp_sql_array = [temp_res[2]]
                             var temp_sql_data = temp_sql_array.join()
-                            connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+                            connection.query('UPDATE server set server_voice_data = ? WHERE server_voice_id = ? ', [temp_sql_data, msg.member.voice.channel.id], function (error, results, fields) {
                                 
                             });
                         });
@@ -123,6 +136,24 @@ client.on('message', async msg => {
                 }
             }
             
+        }
+        else{
+            module_log.log('Filter: Filtering...');
+            if(!filter.hasOwnProperty(msg.member.guild.id)){
+                filter[msg.member.guild.id] = await module_filter.filter_status(msg, connection);
+            }
+
+            if(filter[msg.member.guild.id] == true){
+                console.log("Filter: Let me see...")
+                var filter_output = await module_filter.filter(msg, connection)
+        
+                if(filter_output == true){
+                    console.log("Filter: Detect!")
+                    msg.reply("Ecchi! Horny! Slutty! How long are your panties?")
+                }
+
+                filter_output = false;
+            }
         }
     }
 });

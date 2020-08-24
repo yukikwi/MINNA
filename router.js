@@ -1,5 +1,5 @@
 (function() {
-    const prefix = "/";
+    const prefix = ".";
 
     var is_cmd = function(msg){
         if (msg.content.charAt(0) == prefix) {
@@ -26,6 +26,10 @@
 
         if(msg_cmd == prefix+'add_greeting' || msg_cmd == prefix+'remove_greeting' || msg_cmd == prefix+'add_img_greeting'){
             return 'respond_greeting'
+        }
+
+        if(msg_cmd == prefix+'add_filter' || msg_cmd == prefix+'rm_filter' || msg_cmd == prefix+'filter'){
+            return 'respond_filter';
         }
     }
 

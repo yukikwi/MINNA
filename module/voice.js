@@ -12,7 +12,7 @@ const ytlist = require('youtube-playlist');
 
     function url_get(msg, voice, ytdl, connection){
         return new Promise(function(resolve, reject) {
-            connection.query('SELECT queue_id, queue_url FROM music_queue WHERE queue_server = "'+msg.member.voice.channel.id+'" ORDER BY queue_id LIMIT 1', function(error, result, fields){
+            connection.query('SELECT queue_id, queue_url FROM music_queue WHERE queue_server = ? ORDER BY queue_id LIMIT 1', [msg.member.voice.channel.id], function(error, result, fields){
                 if (error) {
                     return reject(error);
                 }
@@ -27,7 +27,7 @@ const ytlist = require('youtube-playlist');
                 if(res.data.playlist.length != 0){
                     var j = 0
                     for(var i = 0; i < res.data.playlist.length; i++){
-                        connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, "'+res.data.playlist[i]+'", "'+msg.member.voice.channel.id+'"); ', function (error, results, fields) {
+                        connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, ?, ?); ', [res.data.playlist[i], msg.member.voice.channel.id], function (error, results, fields) {
                             if(error){
                                 console.log("Insert fail: "+error)
                                 return false
@@ -48,7 +48,7 @@ const ytlist = require('youtube-playlist');
 
     function db_queue(msg, connection){
         return new Promise(function(resolve, reject) {
-            connection.query('SELECT queue_url FROM music_queue WHERE queue_server = "'+msg.member.voice.channel.id+'" ORDER BY queue_id', function(error, result, fields){
+            connection.query('SELECT queue_url FROM music_queue WHERE queue_server = ? ORDER BY queue_id', [msg.member.voice.channel.id], function(error, result, fields){
                 if (error) {
                     return reject(error);
                 }
@@ -59,7 +59,7 @@ const ytlist = require('youtube-playlist');
 
     function remove_first(msg, connection){
         new Promise(function(resolve, reject) {
-            connection.query('DELETE FROM `music_queue` WHERE `music_queue`.`queue_server` = '+msg.member.voice.channel.id+' ORDER BY queue_id LIMIT 1', function(error, result, fields){
+            connection.query('DELETE FROM `music_queue` WHERE `music_queue`.`queue_server` = ? ORDER BY queue_id LIMIT 1', [msg.member.voice.channel.id], function(error, result, fields){
                 if (error) {
                     return reject(error);
                 }
@@ -69,7 +69,7 @@ const ytlist = require('youtube-playlist');
 
     function remove_all(msg, connection){
         new Promise(function(resolve, reject) {
-            connection.query('DELETE FROM `music_queue` WHERE `music_queue`.`queue_server` = '+msg.member.voice.channel.id+'', function(error, result, fields){
+            connection.query('DELETE FROM `music_queue` WHERE `music_queue`.`queue_server` = ?', [msg.member.voice.channel.id], function(error, result, fields){
                 if (error) {
                     return reject(error);
                 }
@@ -85,7 +85,7 @@ const ytlist = require('youtube-playlist');
         var player_status = "play"
         var temp_sql_array = [player_status]
         temp_sql_data = temp_sql_array.join()
-        connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+        connection.query('UPDATE server set server_voice_data = ? WHERE server_voice_id = ? ', [temp_sql_data, msg.member.voice.channel.id], function (error, results, fields) {
                                 
         });
         var voice_bitrate = voice.channel.bitrate / 1000
@@ -115,7 +115,13 @@ const ytlist = require('youtube-playlist');
         youtube_media.on('info', (data)=>{
             msg.channel.send(":musical_note: Song title : "+data.videoDetails.title+" [Play in  "+ voice_bitrate +"kbps]")
         })
-        dispatcher = voice.play(youtube_media, {bitrate: voice_bitrate,  type: "opus"});
+
+        //ytdl-core
+        dispatcher = voice.play(youtube_media, {bitrate: voice_bitrate});
+        
+        //discord-ytdl-core
+        //dispatcher = voice.play(youtube_media, {bitrate: voice_bitrate,  type: "opus"});
+        
         //YTDL-core-discord style
         //dispatcher = voice.play(await ytdl(url), { type: 'opus', volume: false })
         
@@ -133,7 +139,7 @@ const ytlist = require('youtube-playlist');
                 player_status = "stop";
                 var temp_sql_array = [player_status]
                 var temp_sql_data = temp_sql_array.join()
-                connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+                connection.query('UPDATE server set server_voice_data = ? WHERE server_voice_id = ? ', [temp_sql_data, msg.member.voice.channel.id], function (error, results, fields) {
                                         
                 });
                 is_connect = "false"
@@ -149,7 +155,7 @@ const ytlist = require('youtube-playlist');
             console.log('voice connection...')
             voice_connection = await msg.member.voice.channel.join();
             player_status = "stop";
-            connection.query('UPDATE server set server_voice_data = "stop" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+            connection.query('UPDATE server set server_voice_data = "stop" WHERE server_voice_id = ? ', [msg.member.voice.channel.id], function (error, results, fields) {
                 console.log("Update: "+player_status)                 
             });
         }
@@ -159,7 +165,7 @@ const ytlist = require('youtube-playlist');
             parser[1] = utf8.encode(parser[1])
             if(validUrl.isUri(parser[1])){
                 new Promise(function(resolve, reject) {
-                    connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, "'+parser[1]+'", "'+msg.member.voice.channel.id+'"); ', function (error, results, fields) {
+                    connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, ?, ?); ', [parser[1], msg.member.voice.channel.id], function (error, results, fields) {
                         if(error){
                             console.log("Insert fail: "+error)
                         }
@@ -172,7 +178,7 @@ const ytlist = require('youtube-playlist');
             else{
                 var search = await youtube.searchVideos(parser[1]);
                 new Promise(function(resolve, reject) {
-                    connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, "https://www.youtube.com/watch?v='+search.id+'", "'+msg.member.voice.channel.id+'"); ', function (error, results, fields) {
+                    connection.query('INSERT INTO `music_queue` (`queue_id`, `queue_url`, `queue_server`) VALUES (NULL, ?, ?); ', ['https://www.youtube.com/watch?v='+search.id, msg.member.voice.channel.id], function (error, results, fields) {
                         console.log("Insert: https://www.youtube.com/watch?v="+search.id)  
                     })
                 })
@@ -204,7 +210,7 @@ const ytlist = require('youtube-playlist');
         else if(parser[0] == 'pause'){
             if(dispatcher != null && dispatcher.paused == false){
                 player_status = "pause"
-                connection.query('UPDATE server set server_voice_data = "pause" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+                connection.query('UPDATE server set server_voice_data = "pause" WHERE server_voice_id = ? ', [msg.member.voice.channel.id], function (error, results, fields) {
                     console.log("Update: "+player_status)                 
                 });
                 dispatcher.pause();
@@ -219,10 +225,18 @@ const ytlist = require('youtube-playlist');
                 await remove_first(msg, connection);
                 queue = await db_queue(msg, connection);
                 if(queue.length != 0){
-                    var temp_player = await player(msg, voice_connection, ytdl, connection, player_status)
+                    var temp_player = await player(msg, voice_connection, ytdl, connection, player_status, client)
                     
                     dispatcher = temp_player[0]
                     player_status = temp_player[1]
+                }
+                else{
+                    player_status = "stop";
+                    var temp_sql_array = [player_status]
+                    var temp_sql_data = temp_sql_array.join()
+                    connection.query('UPDATE server set server_voice_data = ? WHERE server_voice_id = ? ', [temp_sql_data, msg.member.voice.channel.id], function (error, results, fields) {
+                        console.log("update: stop")                 
+                    });
                 }
             }
         }
@@ -243,7 +257,7 @@ const ytlist = require('youtube-playlist');
                 player_status = "stop";
                 var temp_sql_array = [player_status]
                 var temp_sql_data = temp_sql_array.join()
-                connection.query('UPDATE server set server_voice_data = "'+temp_sql_data+'" WHERE server_voice_id = "'+msg.member.voice.channel.id+'" ', function (error, results, fields) {
+                connection.query('UPDATE server set server_voice_data = ? WHERE server_voice_id = ? ', [temp_sql_data, msg.member.voice.channel.id], function (error, results, fields) {
                     console.log("update: stop")                 
                 });
                 remove_all(msg, connection)
