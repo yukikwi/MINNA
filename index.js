@@ -1,7 +1,10 @@
 const { Client, MessageAttachment } = require('discord.js');
 const client = new Client();
 const canvas = require('canvas')
-const ytdl = require('ytdl-core');
+//Main
+//const ytdl = require('ytdl-core');
+//If want
+const ytdl = require("discord-ytdl-core");
 //const ytdl = require('ytdl-core-discord')
 const utf8 = require('utf8');
 var module_text = require("./module/text");
@@ -99,7 +102,7 @@ client.on('message', async msg => {
                                 module_log.log("DB: "+player_status)
                             }
                                 
-                            var temp_res = await module_voice.music_exc(msg, voice_connection[msg.member.voice.channel.id], dispatcher[msg.member.voice.channel.id], youtube, utf8, ytdl, player_status, connection)
+                            var temp_res = await module_voice.music_exc(msg, voice_connection[msg.member.voice.channel.id], dispatcher[msg.member.voice.channel.id], youtube, utf8, ytdl, player_status, connection, client)
                             voice_connection[msg.member.voice.channel.id] = temp_res[0];
                             dispatcher[msg.member.voice.channel.id] = temp_res[1]
                             
