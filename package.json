@@ -9,7 +9,7 @@
   "author": "yukikwi",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
+    "@discordjs/opus": "^0.8.0",
     "canvas": "^2.6.1",
     "discord-youtube-api": "^0.1.0",
     "discord-ytdl-core": "^4.0.7",
